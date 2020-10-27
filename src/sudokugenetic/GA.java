@@ -7,41 +7,40 @@ public class GA {
 
 	public Pair populacao[][];
 	public int geracao = 0;
-	public double mut_r = 0.08;
-	public double cross_r = 0.78;
+	public int cross_r = 78;
 
 	public int fitness(Pair cromossomo[]) {
-		Ambiente tmp=new Ambiente(cromossomo);
+		Ambiente tmp = new Ambiente(cromossomo);
 		return tmp.colisao();
 	}
 
 	public void initPopulacao(int qtd_ind) {
-		this.populacao=new Pair[qtd_ind][];
+		this.populacao = new Pair[qtd_ind][];
 		for (int i = 0; i < qtd_ind; i++) {
-			Ambiente a=new Ambiente();
-			this.populacao[i]=a.ambiente2Array();
-			System.out.println(a.toString());
-			System.out.println();
+			Ambiente a = new Ambiente();
+			this.populacao[i] = a.ambiente2Array();
+			System.out.print(a.toString());
+			System.out.println(a.colisao());
 		}
 	}
 
 	public Pair[][] selecao() {
-		int fit[]=new int[this.populacao.length];
-		int anterior=0;
-		
-		for(int i=0;i<fit.length;i++) {
-			Ambiente a=new Ambiente(this.populacao[i]);
-			anterior+=a.colisao();
-			fit[i]=anterior;
+		int fit[] = new int[this.populacao.length];
+		int anterior = 0;
+
+		for (int i = 0; i < fit.length; i++) {
+			Ambiente a = new Ambiente(this.populacao[i]);
+			anterior += a.colisao();
+			fit[i] = anterior;
 		}
-		Random r=new Random();
-		Pair tmp[][]=new Pair[this.populacao.length][];
-		int count=0;
+		Random r = new Random();
+		Pair tmp[][] = new Pair[this.populacao.length][];
+		int count = 0;
 		for (int i = 0; i < tmp.length; i++) {
-			int f=r.nextInt(fit[fit.length-1]);
+			int f = r.nextInt(fit[fit.length - 1]);
 			for (int j = 0; j < fit.length; j++) {
-				if (f<fit[j]) {
-					tmp[count]=this.populacao[j];
+				if (f < fit[j]) {
+					tmp[count] = this.populacao[j];
 					count++;
 					break;
 				}
@@ -49,112 +48,101 @@ public class GA {
 		}
 		return tmp;
 	}
-	
+
 	// 123 321 321 123
 	// 456 654 456 654
 	// 789 987 987 789
-	public Pair[][] crossover(Pair[][] tmp){
-		for (int i = 0; i < tmp.length-1; i=i+2) {
-			for (int j = 0; j < tmp[0].length; j++) {
-				int aux[][]=tmp[i][j].block;
-				tmp[i][j].block[0][0]=tmp[i+1][j].block[0][0];
-				tmp[i][j].block[0][1]=tmp[i+1][j].block[0][1];
-				tmp[i][j].block[0][2]=tmp[i+1][j].block[0][2];
-//				tmp[i][j].block[1][0]=tmp[i+1][j].block[1][0];
-//				tmp[i][j].block[1][1]=tmp[i+1][j].block[1][1];
-//				tmp[i][j].block[1][2]=tmp[i+1][j].block[1][2];
-				tmp[i][j].block[2][0]=tmp[i+1][j].block[2][0];
-				tmp[i][j].block[2][1]=tmp[i+1][j].block[2][1];
-				tmp[i][j].block[2][2]=tmp[i+1][j].block[2][2];
-				
-				tmp[i+1][j].block[0][0]=aux[0][0];
-				tmp[i+1][j].block[0][1]=aux[0][1];
-				tmp[i+1][j].block[0][2]=aux[0][2];				
-//				tmp[i+1][j].block[1][0]=aux[0][0];
-//				tmp[i+1][j].block[1][1]=aux[0][1];
-//				tmp[i+1][j].block[1][2]=aux[0][2];
-				tmp[i+1][j].block[2][0]=aux[2][0];
-				tmp[i+1][j].block[2][1]=aux[2][1];
-				tmp[i+1][j].block[2][2]=aux[2][2];
+	public Pair[][] crossover1(Pair[][] tmp) {
+		Pair result[][] = new Pair[this.populacao.length][9];
+		for (int i = 0; i < tmp.length; i++) {
+			for (int j = 0; j < tmp[0].length - 1; j += 2) {
+				Pair temp = Pair.shuffle(tmp[i][j], tmp[i][j + 1]);
+				result[i][j] = Pair.shuffle(tmp[i][j + 1], tmp[i][j]);
+				result[i][j + 1] = temp;
+			}
+			result[i][tmp[0].length-1]=tmp[i][tmp[0].length-1];
+		}
+		return result;
+	}
+	//0000 1111 
+	public Pair[][] crossover2(Pair[][] tmp){
+		Random r = new Random();
+		Pair result[][] = new Pair[this.populacao.length][9];
+		int corte=r.nextInt(tmp[0].length);
+		for (int i = 0; i < tmp.length-1; i+=2) {
+			for (int j = 0; j < tmp[0].length ; j++) {
+				if(j<corte) {
+					result[i][j]=tmp[i][j];
+					result[i+1][j]=tmp[i+1][j];
+				}else {
+					result[i][j]=tmp[i+1][j];
+					result[i+1][j]=tmp[i][j];
+				}
 			}
 		}
-		return tmp;
+		return result;
 	}
 	
-	
-	public void mutacao(){
-		Ambiente a=new Ambiente();
-		this.populacao[populacao.length-1]=a.ambiente2Array();
+	public Pair[][] mutacao(Pair[][] tmp,int taxa) {
+		Random r=new Random();
+		Pair result[][] = new Pair[this.populacao.length][9];
+		for (int i = 0; i < result.length; i++) {
+			for (int j = 0; j < result[0].length; j++) {
+				result[i][j]=tmp[i][j];
+				if(r.nextInt(100)<taxa){
+					int x=r.nextInt(3);
+					int y=r.nextInt(3);
+					int x1=r.nextInt(3);
+					int y1=r.nextInt(3);
+					
+					int aux=result[i][j].block[x1][y1];
+					result[i][j].block[x1][y1]=result[i][j].block[x][y];
+					result[i][j].block[x][y]=aux;
+				}
+			}
+		}
+		return result;
 	}
-	
-	public void run() {
-		geracao=0;
-		int menor=10000;
+
+	public void run(int pop,int taxamut) {
+		geracao = 0;
+		int menor = 10000;
+		int men=10000;
 		// gerar populacao inicial
-		initPopulacao(5);
+		initPopulacao(pop);
 		// enquanto o objetivo nao for encontrado, faca
-		boolean run = true;
-		Pair[] board = null;
-		while (run) {
-			int fitness_medio = 0;
-			int count = 0;
-			for (Pair p[]: populacao) {
-				fitness_medio += this.fitness(p);
-				count++;
-				if (this.fitness(p)<menor) {
-					menor=this.fitness(p);
-				}
-				if(this.fitness(p)<=100){
-					board = p;
-					run = false;
-				}
-			}
+		for (int i = 0; menor>40; i++) {
 			// selecao
-			Pair aux[][]=selecao();
+			Pair aux[][] = selecao();
 			// crossover
-			boolean cross = false;
-			if(rate(0, 1) < cross_r) {
-				aux=crossover(aux);
-				cross = true;
+			if(new Random().nextInt(100) < cross_r) {
+				aux=crossover2(aux);
 			}
-			populacao=aux;
 			// mutacao
-			boolean mutation = false;
-			if(rate(0, 1) < mut_r) {
-				mutacao();
-				mutation = true;
+			aux=mutacao(aux,taxamut);
+			for (int j = 0; j < aux.length; j++) {
+				populacao[j] = aux[j];
 			}
-			System.out.println("Geração: "+geracao);
-			System.out.println("Fitness Médio: "+fitness_medio/count);
-			System.out.println("Crossover: "+cross);
-			System.out.println("Mutação: "+mutation);
-			System.out.println("Menor fitness: "+menor);
+			System.out.println("Geração: " + geracao);
+			System.out.println("Menor fitness da gração: " + menor);
+			System.out.println("Menor fitness: " + men);
 			System.out.println();
 			geracao++;
+			menor=10000;
+			for (Pair p[] : populacao) {
+				if (this.fitness(p) < menor) {
+					menor = this.fitness(p);
+				}
+				if(this.fitness(p) <men) {
+					men=this.fitness(p);
+				}
+			}
 		}
-		Ambiente amb = null;
-		amb.array2Ambiente(board);
-		System.out.println(amb.toString());
 	}
-	
+
 	public static void main(String[] args) {
-		GA g=new GA();
-		/*g.initPopulacao(5);
-		for (Pair p[]: g.populacao) {
-			System.out.println(g.fitness(p));
-		}
-		System.out.println();
-		Pair aux[][]=g.selecao();
-		aux=g.crossover(aux);
-		for (Pair p[]:aux) {
-			System.out.println(Arrays.toString(p));
-		}*/
-		
-		g.run();
-	}
-	
-	private double rate(double min, double max) {
-		return min + Math.random() * ((max - min)+1);
+		GA g = new GA();
+
+		g.run(100,8);
 	}
 }
-

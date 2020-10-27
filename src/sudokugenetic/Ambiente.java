@@ -1,5 +1,6 @@
 package sudokugenetic;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Ambiente {
@@ -22,10 +23,10 @@ public class Ambiente {
 	
 	public Ambiente() {
 		this.Grid=new int[9][9];
-		this.random();
+		this.random2();
 	}
 	
-	private void random() {
+	private void random1() {
 		Random r=new Random();
 		for (int i = 0; i < Grid.length; i++) {
 			for (int j = 0; j < Grid[0].length; j++) {
@@ -34,6 +35,25 @@ public class Ambiente {
 		}
 	}
 	
+	private void random2() {
+		Random r=new Random();
+		for (int i = 0; i < Grid.length; i++) {
+			for (int j = 0; j < Grid.length; j++) {
+				ArrayList<Integer> end=new ArrayList<Integer>();
+				end.add(1);end.add(2);end.add(3);end.add(4);end.add(5);end.add(6);end.add(7);end.add(8);end.add(9);
+				int x =j/3;
+				int y =i/3;
+				for (int k = y*3+0; k < y*3+3; k++) {
+					for (int l = x*3+0; l < x*3+3; l++) {
+	
+						int idx=r.nextInt(end.size());
+						Grid[k][l]=end.get(idx);
+						end.remove(idx);
+					}
+				}
+			}
+		}
+	}
 	@Override
 	public String toString() {
 		String str="";
