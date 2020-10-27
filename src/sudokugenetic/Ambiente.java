@@ -3,7 +3,7 @@ package sudokugenetic;
 import java.util.Random;
 
 public class Ambiente {
-	int Grid[][];/*= {
+	public int Grid[][];/*= {
 		{8,2,7,1,5,4,3,9,6},
 		{9,6,5,3,2,7,1,4,8},
 		{3,4,1,6,8,9,7,5,2},
@@ -102,8 +102,8 @@ public class Ambiente {
 	public void array2Ambiente(Pair arr[]) {
 		int vet[][]=new int[arr.length][arr.length];
 		int count=0;
-		for (int i = 0; i < this.Grid.length; i=i+3) {
-			for (int j = 0; j < this.Grid[0].length; j=j+3) {
+		for (int i = 0; i < arr.length; i=i+3) {
+			for (int j = 0; j < arr.length; j=j+3) {
 				int x =j/3;
 				int y =i/3,tmp=0,tmp1=0;
 				for (int k = y*3+0; k < y*3+3; k++) {

@@ -5,8 +5,10 @@ import java.util.Random;
 
 public class GA {
 
-	Pair populacao[][];
-	int geracao = 0;
+	public Pair populacao[][];
+	public int geracao = 0;
+	public double mut_r = 0.08;
+	public double cross_r = 0.78;
 
 	public int fitness(Pair cromossomo[]) {
 		Ambiente tmp=new Ambiente(cromossomo);
@@ -58,13 +60,19 @@ public class GA {
 				tmp[i][j].block[0][0]=tmp[i+1][j].block[0][0];
 				tmp[i][j].block[0][1]=tmp[i+1][j].block[0][1];
 				tmp[i][j].block[0][2]=tmp[i+1][j].block[0][2];
+//				tmp[i][j].block[1][0]=tmp[i+1][j].block[1][0];
+//				tmp[i][j].block[1][1]=tmp[i+1][j].block[1][1];
+//				tmp[i][j].block[1][2]=tmp[i+1][j].block[1][2];
 				tmp[i][j].block[2][0]=tmp[i+1][j].block[2][0];
 				tmp[i][j].block[2][1]=tmp[i+1][j].block[2][1];
 				tmp[i][j].block[2][2]=tmp[i+1][j].block[2][2];
 				
 				tmp[i+1][j].block[0][0]=aux[0][0];
 				tmp[i+1][j].block[0][1]=aux[0][1];
-				tmp[i+1][j].block[0][2]=aux[0][2];
+				tmp[i+1][j].block[0][2]=aux[0][2];				
+//				tmp[i+1][j].block[1][0]=aux[0][0];
+//				tmp[i+1][j].block[1][1]=aux[0][1];
+//				tmp[i+1][j].block[1][2]=aux[0][2];
 				tmp[i+1][j].block[2][0]=aux[2][0];
 				tmp[i+1][j].block[2][1]=aux[2][1];
 				tmp[i+1][j].block[2][2]=aux[2][2];
@@ -85,27 +93,48 @@ public class GA {
 		// gerar populacao inicial
 		initPopulacao(5);
 		// enquanto o objetivo nao for encontrado, faca
-		while (true) {
+		boolean run = true;
+		Pair[] board = null;
+		while (run) {
+			int fitness_medio = 0;
+			int count = 0;
 			for (Pair p[]: populacao) {
+				fitness_medio += this.fitness(p);
+				count++;
 				if (this.fitness(p)<menor) {
 					menor=this.fitness(p);
 				}
-				if(this.fitness(p)<100){
-					break;
+				if(this.fitness(p)<=100){
+					board = p;
+					run = false;
 				}
 			}
 			// selecao
 			Pair aux[][]=selecao();
 			// crossover
-			aux=crossover(aux);
-			// mutacao
-			mutacao();
+			boolean cross = false;
+			if(rate(0, 1) < cross_r) {
+				aux=crossover(aux);
+				cross = true;
+			}
 			populacao=aux;
-			System.out.println("Gera��o: "+geracao);
+			// mutacao
+			boolean mutation = false;
+			if(rate(0, 1) < mut_r) {
+				mutacao();
+				mutation = true;
+			}
+			System.out.println("Geração: "+geracao);
+			System.out.println("Fitness Médio: "+fitness_medio/count);
+			System.out.println("Crossover: "+cross);
+			System.out.println("Mutação: "+mutation);
 			System.out.println("Menor fitness: "+menor);
 			System.out.println();
 			geracao++;
 		}
+		Ambiente amb = null;
+		amb.array2Ambiente(board);
+		System.out.println(amb.toString());
 	}
 	
 	public static void main(String[] args) {
@@ -122,6 +151,10 @@ public class GA {
 		}*/
 		
 		g.run();
+	}
+	
+	private double rate(double min, double max) {
+		return min + Math.random() * ((max - min)+1);
 	}
 }
 
